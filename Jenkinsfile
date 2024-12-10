@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'docker:latest'  // Use the latest Docker image for the agent
+            args '--privileged'  // Enable Docker-in-Docker by using the privileged mode
+        }
+    }
 
     environment {
         ACR_LOGIN_SERVER = 'myacrregistry4.azurecr.io'
