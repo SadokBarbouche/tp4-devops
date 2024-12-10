@@ -39,8 +39,8 @@ resource "azurerm_linux_web_app" "app" {
     always_on = true # Assure la disponibilité continue
 
     application_stack {
-      docker_image_name = "test:latest"
-      docker_registry_url = "https://${azurerm_container_registry.acr.login_server}"
+      docker_image_name = "sadokbarbouche/nodejs-app:latest"
+      docker_registry_url = "https://index.docker.io"
     }
   }
 }
