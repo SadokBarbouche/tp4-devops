@@ -2,12 +2,11 @@ pipeline {
     agent any
 
     environment {
-        ACR_LOGIN_SERVER = 'myacrregistry4.azurecr.io'   // ACR login server URL
-        ACR_USERNAME     = credentials('acr-username')    // ACR username from Jenkins credentials
-        ACR_PASSWORD     = credentials('acr-password')    // ACR password from Jenkins credentials
-        IMAGE_NAME       = 'my-flask-app'                // Name of the image to be built and pushed
-        IMAGE_TAG        = 'latest'                      // Tag for the Docker image
-        GIT_REPO         = "https://github.com/SadokBarbouche/tp4-devops/"
+    ACR_LOGIN_SERVER = 'myacrregistry4.azurecr.io'   // ACR login server URL
+    ACR_USERNAME     = 'myacrregistry4'               // ACR username
+    ACR_PASSWORD     = 'Ia20BamS5Ldy27cqLHFCrTq3ErbAw75Mw/LwZlrlSo+ACRAbdJt1' // ACR password
+    IMAGE_NAME       = 'my-flask-app'                  // Name of the image to be built and pushed
+    IMAGE_TAG        = 'latest'                        // Tag for the Docker image
     }
 
     stages {
