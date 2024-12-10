@@ -54,7 +54,7 @@ pipeline {
                     script {
                         sh "az acr login --name ${env.ACR_LOGIN_SERVER} --username ${env.ACR_USERNAME} --password ${env.ACR_PASSWORD}"
                         docker.withRegistry("https://${env.ACR_LOGIN_SERVER}", "${env.ACR_USERNAME}:${env.ACR_PASSWORD}") {
-                            docker.image("${env.ACR_LOGIN_SERVER}/${env.IMAGE_NAME}:${env.IMAGE_TAG}").push()
+                            docker.image("myacrregistry4/${env.IMAGE_NAME}:${env.IMAGE_TAG}").push()
                         }
                     }
                 }
