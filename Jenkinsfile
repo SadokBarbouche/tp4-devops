@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        ACR_LOGIN_SERVER = 'myacrregistry4.azurecr.io' // ACR login server URL
-        IMAGE_NAME       = 'my-flask-app'              // Name of the image to be built and pushed
-        IMAGE_TAG        = 'latest'                    // Tag for the Docker image
+        ACR_LOGIN_SERVER = 'myacrregistry4.azurecr.io'
+        IMAGE_NAME       = 'my-flask-app'
+        IMAGE_TAG        = 'latest'
         GIT_REPO         = "https://github.com/SadokBarbouche/tp4-devops/"
     }
 
@@ -15,27 +15,10 @@ pipeline {
             }
         }
 
-        stage('Ensure Docker is Installed') {
+        stage('Verify Docker Installation') {
             steps {
                 script {
-                    // Check if Docker is installed
-                    def dockerVersion = sh(script: 'docker --version', returnStdout: true).trim()
-                    if (dockerVersion.contains('Docker version')) {
-                        echo "Docker is already installed: ${dockerVersion}"
-                    } else {
-                        echo "Docker is not installed. Installing Docker..."
-                        // Install Docker (example for Ubuntu)
-                        sh '''
-                            sudo apt-get update
-                            sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
-                            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-                            sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-                            sudo apt-get update
-                            sudo apt-get install -y docker-ce
-                        '''
-                        // Verify installation
-                        sh 'docker --version'
-                    }
+                    sh 'docker --version'
                 }
             }
         }
@@ -51,7 +34,6 @@ pipeline {
         stage('Login to Azure') {
             steps {
                 script {
-                    // Use the Azure CLI to authenticate with the service principal
                     withCredentials([
                         string(credentialsId: 'ARM_SUBSCRIPTION_ID', variable: 'ARM_SUBSCRIPTION_ID'),
                         string(credentialsId: 'ARM_CLIENT_ID', variable: 'ARM_CLIENT_ID'),
