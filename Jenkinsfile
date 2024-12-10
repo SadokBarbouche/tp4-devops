@@ -11,14 +11,39 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: "${GIT_REPO}"
+                git branch: 'main', url: "${env.GIT_REPO}"
+            }
+        }
+
+        stage('Ensure Docker is Installed') {
+            steps {
+                script {
+                    // Check if Docker is installed
+                    def dockerVersion = sh(script: 'docker --version', returnStdout: true).trim()
+                    if (dockerVersion.contains('Docker version')) {
+                        echo "Docker is already installed: ${dockerVersion}"
+                    } else {
+                        echo "Docker is not installed. Installing Docker..."
+                        // Install Docker (example for Ubuntu)
+                        sh '''
+                            sudo apt-get update
+                            sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+                            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+                            sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+                            sudo apt-get update
+                            sudo apt-get install -y docker-ce
+                        '''
+                        // Verify installation
+                        sh 'docker --version'
+                    }
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build("${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG}")
+                    docker.build("${env.ACR_LOGIN_SERVER}/${env.IMAGE_NAME}:${env.IMAGE_TAG}")
                 }
             }
         }
@@ -47,8 +72,8 @@ pipeline {
                     usernamePassword(credentialsId: 'acr-username', usernameVariable: 'ACR_USERNAME', passwordVariable: 'ACR_PASSWORD')
                 ]) {
                     script {
-                        docker.withRegistry("https://${ACR_LOGIN_SERVER}", "${ACR_USERNAME}:${ACR_PASSWORD}") {
-                            docker.image("${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG}").push()
+                        docker.withRegistry("https://${env.ACR_LOGIN_SERVER}", "${env.ACR_USERNAME}:${env.ACR_PASSWORD}") {
+                            docker.image("${env.ACR_LOGIN_SERVER}/${env.IMAGE_NAME}:${env.IMAGE_TAG}").push()
                         }
                     }
                 }
