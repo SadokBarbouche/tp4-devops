@@ -53,7 +53,6 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'acr-username-password', usernameVariable: 'ACR_USERNAME', passwordVariable: 'ACR_PASSWORD')]) {
                     script {
                         sh """
-                        docker tag ${env.IMAGE_NAME}:${env.IMAGE_TAG} ${env.ACR_LOGIN_SERVER}/${env.IMAGE_NAME}:${env.IMAGE_TAG}
                         docker push ${env.ACR_LOGIN_SERVER}/${env.IMAGE_NAME}:${env.IMAGE_TAG}
                         """
                     }
