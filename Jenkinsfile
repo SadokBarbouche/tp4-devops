@@ -68,6 +68,11 @@ pipeline {
 
     post {
         always {
+            script {
+                // Debug: Print credentials to ensure they are correctly retrieved
+                echo "ACR_USERNAME: ${ACR_USERNAME}"
+                echo "ACR_PASSWORD: ${ACR_PASSWORD}"
+            }
             mail to: 'bribesh1234@gmail.com',
                  subject: "Pipeline ${env.BUILD_NUMBER} - ${currentBuild.currentResult}",
                  body: "Check Jenkins for details."
