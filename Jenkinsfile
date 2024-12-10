@@ -16,19 +16,6 @@ pipeline {
             }
         }
 
-        stage('Print Environment Variables') {
-            steps {
-                script {
-                    // Print environment variables
-                    echo "ACR_LOGIN_SERVER: ${ACR_LOGIN_SERVER}"
-                    echo "ACR_USERNAME: ${ACR_USERNAME}"
-                    echo "IMAGE_NAME: ${IMAGE_NAME}"
-                    echo "IMAGE_TAG: ${IMAGE_TAG}"
-                    // Avoid printing sensitive information like ACR_PASSWORD
-                }
-            }
-        }
-
         stage('Initialize Terraform') {
             steps {
                 sh 'terraform init'
@@ -47,13 +34,11 @@ pipeline {
             }
         }
 
-        
-
         stage('Build Docker Image') {
             steps {
                 script {
                     // Build the Docker image using the Dockerfile in your repository
-                    sh "docker build -t ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG} ."
+                    docker.build("${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG}")
                 }
             }
         }
@@ -62,7 +47,9 @@ pipeline {
             steps {
                 script {
                     // Login to Azure Container Registry using the credentials
-                    sh "echo ${ACR_PASSWORD} | docker login ${ACR_LOGIN_SERVER} -u ${ACR_USERNAME} --password-stdin"
+                    docker.withRegistry("https://${ACR_LOGIN_SERVER}", "${ACR_USERNAME}:${ACR_PASSWORD}") {
+                        // This block will use the registry credentials for the following steps
+                    }
                 }
             }
         }
@@ -71,7 +58,9 @@ pipeline {
             steps {
                 script {
                     // Push the Docker image to ACR
-                    sh "docker push ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG}"
+                    docker.withRegistry("https://${ACR_LOGIN_SERVER}", "${ACR_USERNAME}:${ACR_PASSWORD}") {
+                        docker.image("${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG}").push()
+                    }
                 }
             }
         }
@@ -79,8 +68,13 @@ pipeline {
 
     post {
         always {
+            script {
+                // Debug: Print credentials to ensure they are correctly retrieved
+                echo "ACR_USERNAME: ${ACR_USERNAME}"
+                echo "ACR_PASSWORD: ${ACR_PASSWORD}"
+            }
             mail to: 'bribesh1234@gmail.com',
-                 subject: "Pipeline \${BUILD_NUMBER} - \${BUILD_STATUS}",
+                 subject: "Pipeline ${env.BUILD_NUMBER} - ${currentBuild.currentResult}",
                  body: "Check Jenkins for details."
         }
     }
