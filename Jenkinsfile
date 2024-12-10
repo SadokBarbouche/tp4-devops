@@ -2,11 +2,10 @@ pipeline {
     agent any
 
     environment {
-    ACR_LOGIN_SERVER = 'myacrregistry4.azurecr.io'   // ACR login server URL
-    ACR_USERNAME     = 'myacrregistry4'               // ACR username
-    ACR_PASSWORD     = 'Ia20BamS5Ldy27cqLHFCrTq3ErbAw75Mw/LwZlrlSo+ACRAbdJt1' // ACR password
-    IMAGE_NAME       = 'my-flask-app'                  // Name of the image to be built and pushed
-    IMAGE_TAG        = 'latest'                        // Tag for the Docker image
+        ACR_LOGIN_SERVER = 'myacrregistry4.azurecr.io' // ACR login server URL
+        IMAGE_NAME       = 'my-flask-app'              // Name of the image to be built and pushed
+        IMAGE_TAG        = 'latest'                    // Tag for the Docker image
+        GIT_REPO         = "https://github.com/SadokBarbouche/tp4-devops/"
     }
 
     stages {
@@ -16,50 +15,23 @@ pipeline {
             }
         }
 
-        stage('Initialize Terraform') {
-            steps {
-                sh 'terraform init'
-            }
-        }
-
-        stage('Plan Infrastructure') {
-            steps {
-                sh 'terraform plan -out=tfplan'
-            }
-        }
-
-        stage('Apply Infrastructure') {
-            steps {
-                sh 'terraform apply -auto-approve tfplan'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Build the Docker image using the Dockerfile in your repository
                     docker.build("${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG}")
-                }
-            }
-        }
-
-        stage('Login to ACR') {
-            steps {
-                script {
-                    // Login to Azure Container Registry using the credentials
-                    docker.withRegistry("https://${ACR_LOGIN_SERVER}", "${ACR_USERNAME}:${ACR_PASSWORD}") {
-                        // This block will use the registry credentials for the following steps
-                    }
                 }
             }
         }
 
         stage('Push Docker Image to ACR') {
             steps {
-                script {
-                    // Push the Docker image to ACR
-                    docker.withRegistry("https://${ACR_LOGIN_SERVER}", "${ACR_USERNAME}:${ACR_PASSWORD}") {
-                        docker.image("${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG}").push()
+                withCredentials([
+                    usernamePassword(credentialsId: 'acr-username', usernameVariable: 'ACR_USERNAME', passwordVariable: 'ACR_PASSWORD')
+                ]) {
+                    script {
+                        docker.withRegistry("https://${ACR_LOGIN_SERVER}", "${ACR_USERNAME}:${ACR_PASSWORD}") {
+                            docker.image("${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG}").push()
+                        }
                     }
                 }
             }
@@ -68,11 +40,6 @@ pipeline {
 
     post {
         always {
-            script {
-                // Debug: Print credentials to ensure they are correctly retrieved
-                echo "ACR_USERNAME: ${ACR_USERNAME}"
-                echo "ACR_PASSWORD: ${ACR_PASSWORD}"
-            }
             mail to: 'bribesh1234@gmail.com',
                  subject: "Pipeline ${env.BUILD_NUMBER} - ${currentBuild.currentResult}",
                  body: "Check Jenkins for details."
