@@ -37,12 +37,4 @@ pipeline {
             }
         }
     }
-
-    post {
-        always {
-            mail to: 'bribesh1234@gmail.com',
-                 subject: "Pipeline ${env.BUILD_NUMBER} - ${currentBuild.currentResult}",
-                 body: "Check Jenkins for details."
-        }
-    }
 }
