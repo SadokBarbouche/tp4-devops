@@ -4,7 +4,7 @@ provider "azurerm" {
 
 # 1. Création du groupe de ressources
 resource "azurerm_resource_group" "rg" {
-  name     = "app-service-rg"
+  name     = "tf-app-service-rg"
   location = "East US"
 }
 
@@ -19,7 +19,7 @@ resource "azurerm_service_plan" "app_plan" {
 
 # 3. Création de l'Azure Container Registry
 resource "azurerm_container_registry" "acr" {
-  name                = "myacrregistry4"
+  name                = "tfmyacrregistry4"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   sku                 = "Basic"
@@ -28,13 +28,19 @@ resource "azurerm_container_registry" "acr" {
 
 # 4. Déploiement de l'application web Linux
 resource "azurerm_linux_web_app" "app" {
-  name                = "my-flask-app-tp-devops-4"
+  name                = "tf-my-flask-app-tp-devops-4"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   service_plan_id     = azurerm_service_plan.app_plan.id
 
   # Bloc site_config avec linux_fx_version pour utiliser ACR
+  
   site_config {
     always_on = true # Assure la disponibilité continue
+
+    application_stack {
+      docker_image_name = "test:latest"
+      docker_registry_url = "https://${azurerm_container_registry.acr.login_server}"
+    }
   }
 }
