@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        ACR_LOGIN_SERVER = 'myacrregistry4.azurecr.io'
+        ACR_LOGIN_SERVER = 'tfmyacrregistry4.azurecr.io'
         IMAGE_NAME       = 'test'
         IMAGE_TAG        = 'latest'
         GIT_REPO         = "https://github.com/SadokBarbouche/tp4-devops/"
@@ -54,7 +54,7 @@ pipeline {
                     script {
                         sh """
                         docker push ${env.ACR_LOGIN_SERVER}/${env.IMAGE_NAME}:${env.IMAGE_TAG}
-                        """
+                        """  
                     }
                 }
             }
