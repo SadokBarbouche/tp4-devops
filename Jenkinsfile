@@ -52,10 +52,7 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'acr-username-password', usernameVariable: 'ACR_USERNAME', passwordVariable: 'ACR_PASSWORD')]) {
                     script {
-                        // Log in to ACR using the Azure CLI (az acr login)
                         sh "az acr login --name ${env.ACR_LOGIN_SERVER} --username ${env.ACR_USERNAME} --password ${env.ACR_PASSWORD}"
-
-                        // Push the image to ACR
                         docker.withRegistry("https://${env.ACR_LOGIN_SERVER}", "${env.ACR_USERNAME}:${env.ACR_PASSWORD}") {
                             docker.image("${env.ACR_LOGIN_SERVER}/${env.IMAGE_NAME}:${env.IMAGE_TAG}").push()
                         }
@@ -63,5 +60,5 @@ pipeline {
                 }
             }
         }
-
+    }
 }
