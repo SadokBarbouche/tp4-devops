@@ -56,11 +56,4 @@ pipeline {
         }
     }
 
-    post {
-        always {
-            mail to: 'bribesh1234@gmail.com',
-                 subject: "Pipeline \${BUILD_NUMBER} - \${BUILD_STATUS}",
-                 body: "Check Jenkins for details."
-        }
-    }
 }
