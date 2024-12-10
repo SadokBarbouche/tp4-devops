@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     environment {
-        ACR_LOGIN_SERVER = 'myacrregistry4.azurecr.io'  // ACR login server URL
-        IMAGE_NAME       = 'my-flask-app'                // Name of the image to be built and pushed
-        IMAGE_TAG        = 'latest'                      // Tag for the Docker image
-        GIT_REPO         = 'https://github.com/SadokBarbouche/tp4-devops/'
+        ACR_LOGIN_SERVER = 'myacrregistry4.azurecr.io' // ACR login server URL
+        IMAGE_NAME       = 'my-flask-app'              // Name of the image to be built and pushed
+        IMAGE_TAG        = 'latest'                    // Tag for the Docker image
+        GIT_REPO         = "https://github.com/SadokBarbouche/tp4-devops/"
     }
 
     stages {
@@ -27,13 +27,14 @@ pipeline {
             steps {
                 script {
                     // Use the Azure CLI to authenticate with the service principal
-                    withCredentials([string(credentialsId: 'AZURE_CLIENT_ID', variable: 'AZURE_CLIENT_ID'),
-                                     string(credentialsId: 'AZURE_CLIENT_SECRET', variable: 'AZURE_CLIENT_SECRET'),
-                                     string(credentialsId: 'AZURE_TENANT_ID', variable: 'AZURE_TENANT_ID'),
-                                     string(credentialsId: 'AZURE_SUBSCRIPTION_ID', variable: 'AZURE_SUBSCRIPTION_ID')]) {
+                    withCredentials([
+                        string(credentialsId: 'ARM_SUBSCRIPTION_ID', variable: 'ARM_SUBSCRIPTION_ID'),
+                        string(credentialsId: 'ARM_CLIENT_ID', variable: 'ARM_CLIENT_ID'),
+                        string(credentialsId: 'ARM_CLIENT_SECRET', variable: 'ARM_CLIENT_SECRET'),
+                        string(credentialsId: 'ARM_TENANT_ID', variable: 'ARM_TENANT_ID')
+                    ]) {
                         sh '''
-                            az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
-                            az account set --subscription $AZURE_SUBSCRIPTION_ID
+                            az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID
                         '''
                     }
                 }
@@ -46,7 +47,6 @@ pipeline {
                     usernamePassword(credentialsId: 'acr-username', usernameVariable: 'ACR_USERNAME', passwordVariable: 'ACR_PASSWORD')
                 ]) {
                     script {
-                        // Login to ACR and push the Docker image
                         docker.withRegistry("https://${ACR_LOGIN_SERVER}", "${ACR_USERNAME}:${ACR_PASSWORD}") {
                             docker.image("${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG}").push()
                         }
@@ -55,5 +55,4 @@ pipeline {
             }
         }
     }
-
 }
