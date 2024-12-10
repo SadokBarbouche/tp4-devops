@@ -18,7 +18,12 @@ pipeline {
         stage('Verify Docker Installation') {
             steps {
                 script {
-                    sh 'docker --version'
+                    def dockerVersion = sh(script: 'docker --version', returnStdout: true).trim()
+                    if (dockerVersion.contains('Docker version')) {
+                        echo "Docker is installed: ${dockerVersion}"
+                    } else {
+                        error "Docker is not installed or not accessible. Please install Docker and ensure it is running."
+                    }
                 }
             }
         }
