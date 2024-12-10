@@ -7,12 +7,13 @@ pipeline {
         ACR_PASSWORD     = credentials('acr-password')    // ACR password from Jenkins credentials
         IMAGE_NAME       = 'my-flask-app'                // Name of the image to be built and pushed
         IMAGE_TAG        = 'latest'                      // Tag for the Docker image
+        GIT_REPO = '     = "https://github.com/SadokBarbouche/tp4-devops/"
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                git 'https://github.com/SadokBarbouche/tp4-devops/'
+                git branch: 'main', url: "${GIT_REPO}"
             }
         }
 
