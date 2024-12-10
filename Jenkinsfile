@@ -26,10 +26,11 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build("${env.ACR_LOGIN_SERVER}/${env.IMAGE_NAME}:${env.IMAGE_TAG}")
+                    def app = docker.build("${env.ACR_LOGIN_SERVER}/${env.IMAGE_NAME}:${env.IMAGE_TAG}", "-f app/Dockerfile ./app")
                 }
             }
         }
+
 
         stage('Login to Azure') {
             steps {
