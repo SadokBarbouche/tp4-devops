@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     environment {
-        ACR_LOGIN_SERVER = 'tfmyacrregistry4.azurecr.io'
         IMAGE_NAME       = 'test'
         IMAGE_TAG        = 'latest'
         GIT_REPO         = "https://github.com/SadokBarbouche/tp4-devops/"
+        DOCKER_HUB_REPO  = "sadokbarbouche/${IMAGE_NAME}"
     }
 
     stages {
@@ -26,39 +26,31 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    def app = docker.build("${env.ACR_LOGIN_SERVER}/${env.IMAGE_NAME}:${env.IMAGE_TAG}", "-f app/Dockerfile ./app")
+                    def app = docker.build("${env.DOCKER_HUB_REPO}:${env.IMAGE_TAG}", "-f app/Dockerfile ./app")
                 }
             }
         }
 
-        stage('Login to Azure') {
+        stage('Login to Docker Hub') {
             steps {
-                script {
-                    withCredentials([
-                        string(credentialsId: 'ARM_SUBSCRIPTION_ID', variable: 'ARM_SUBSCRIPTION_ID'),
-                        string(credentialsId: 'ARM_CLIENT_ID', variable: 'ARM_CLIENT_ID'),
-                        string(credentialsId: 'ARM_CLIENT_SECRET', variable: 'ARM_CLIENT_SECRET'),
-                        string(credentialsId: 'ARM_TENANT_ID', variable: 'ARM_TENANT_ID')
-                    ]) {
-                        sh '''
-                            az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID
-                        '''
-                    }
-                }
-            }
-        }
-
-        stage('Push Docker Image to ACR') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'acr-username-password', usernameVariable: 'ACR_USERNAME', passwordVariable: 'ACR_PASSWORD')]) {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                     script {
                         sh """
-                        docker push ${env.ACR_LOGIN_SERVER}/${env.IMAGE_NAME}:${env.IMAGE_TAG}
-                        """  
+                        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+                        """
                     }
                 }
             }
-}
+        }
 
+        stage('Push Docker Image to Docker Hub') {
+            steps {
+                script {
+                    sh """
+                    docker push ${env.DOCKER_HUB_REPO}:${env.IMAGE_TAG}
+                    """
+                }
+            }
+        }
     }
 }
