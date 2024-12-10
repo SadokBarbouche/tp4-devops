@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         ACR_LOGIN_SERVER = 'myacrregistry4.azurecr.io'
-        IMAGE_NAME       = 'my-flask-app'
+        IMAGE_NAMaE       = 'my-flask-app'
         IMAGE_TAG        = 'latest'
         GIT_REPO         = "https://github.com/SadokBarbouche/tp4-devops/"
     }
