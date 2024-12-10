@@ -49,16 +49,21 @@ pipeline {
         }
 
         stage('Push Docker Image to ACR') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'acr-username-password', usernameVariable: 'ACR_USERNAME', passwordVariable: 'ACR_PASSWORD')]) {
-                    script {
-                        sh "az acr login --name ${env.ACR_LOGIN_SERVER} --username ${env.ACR_USERNAME} --password ${env.ACR_PASSWORD}"
-                        docker.withRegistry("https://${env.ACR_LOGIN_SERVER}", "${env.ACR_USERNAME}:${env.ACR_PASSWORD}") {
-                            docker.image("myacrregistry4/${env.IMAGE_NAME}:${env.IMAGE_TAG}").push()
-                        }
-                    }
-                }
+    steps {
+        withCredentials([usernamePassword(credentialsId: 'acr-username-password', usernameVariable: 'ACR_USERNAME', passwordVariable: 'ACR_PASSWORD')]) {
+            script {
+                // Perform Docker login
+                sh "docker login ${env.ACR_LOGIN_SERVER} -u ${ACR_USERNAME} -p ${ACR_PASSWORD}"
+                
+                // Push the Docker image to ACR
+                sh """
+                docker tag ${env.IMAGE_NAME}:${env.IMAGE_TAG} ${env.ACR_LOGIN_SERVER}/${env.IMAGE_NAME}:${env.IMAGE_TAG}
+                docker push ${env.ACR_LOGIN_SERVER}/${env.IMAGE_NAME}:${env.IMAGE_TAG}
+                """
             }
         }
+    }
+}
+
     }
 }
