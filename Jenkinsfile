@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'docker:latest'  // Use the latest Docker image for the agent
-            args '--privileged'  // Enable Docker-in-Docker by using the privileged mode
-        }
-    }
+    agent any
 
     environment {
         ACR_LOGIN_SERVER = 'myacrregistry4.azurecr.io'
@@ -23,12 +18,7 @@ pipeline {
         stage('Verify Docker Installation') {
             steps {
                 script {
-                    def dockerVersion = sh(script: 'docker --version', returnStdout: true).trim()
-                    if (dockerVersion.contains('Docker version')) {
-                        echo "Docker is installed: ${dockerVersion}"
-                    } else {
-                        error "Docker is not installed or not accessible. Please install Docker and ensure it is running."
-                    }
+                    sh 'docker --version'
                 }
             }
         }
